@@ -28,6 +28,8 @@ from flwr.server.client_manager import ClientManager
 from flwr.server.grpc_server.grpc_bridge import GRPCBridge, InsWrapper, ResWrapper
 from flwr.server.grpc_server.grpc_client_proxy import GrpcClientProxy
 
+from flwr.common.logger import log
+from logging import DEBUG, INFO
 
 def default_bridge_factory() -> GRPCBridge:
     """Return GRPCBridge instance."""
@@ -87,10 +89,16 @@ class FlowerServiceServicer(transport_pb2_grpc.FlowerServiceServicer):
                 wrapping the actual message
             - The Join method is (pretty much) protocol unaware
         """
+        log(INFO, "FlowerServiceServicer.Join() - start")
+
         peer = context.peer()
+        log(INFO, "peer: %s", peer)
         bridge = self.grpc_bridge_factory()
+        peer = f"{peer}:{id(bridge)}" # work around of the same peer from proxy
         client = self.client_factory(peer, bridge)
         is_success = register_client(self.client_manager, client, context)
+
+        log(INFO, "is_success: %s", is_success)
 
         if is_success:
             # Get iterators
@@ -101,10 +109,14 @@ class FlowerServiceServicer(transport_pb2_grpc.FlowerServiceServicer):
 
             # All messages will be pushed to client bridge directly
             while True:
+                log(INFO, "Loop - while True")
                 try:
                     # Get ins_wrapper from bridge and yield server_message
                     ins_wrapper: InsWrapper = next(ins_wrapper_iterator)
+                    log(INFO, "server_message: %s", ins_wrapper.server_message)
+                    log(INFO, "yielding server message")
                     yield ins_wrapper.server_message
+                    log(INFO, "after yield")
 
                     # Set current timeout, might be None
                     if ins_wrapper.timeout is not None:
@@ -112,6 +124,7 @@ class FlowerServiceServicer(transport_pb2_grpc.FlowerServiceServicer):
 
                     # Wait for client message
                     client_message = next(client_message_iterator)
+                    log(INFO, "client_message: %s", client_message)
 
                     if client_message is client_message_iterator.get_sentinel():
                         # Important: calling `context.abort` in gRPC always
@@ -128,10 +141,15 @@ class FlowerServiceServicer(transport_pb2_grpc.FlowerServiceServicer):
                         # that client_message in subsequent lines is not None
                         # It does not understand that `context.abort` will terminate
                         # this execution context by raising an exception.
+                        log(INFO, "Timeout!!!!!!")
                         return
 
+                    log(INFO, "bridge.set_res_wrapper()")
                     bridge.set_res_wrapper(
                         res_wrapper=ResWrapper(client_message=client_message)
                     )
                 except StopIteration:
+                    log(INFO, "StopIteration")
                     break
+            log(INFO, "Loop ended")
+        log(INFO, "FlowerServiceServicer.Join() - end")

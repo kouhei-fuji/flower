@@ -18,7 +18,7 @@ Paper: https://arxiv.org/abs/1602.05629
 """
 
 
-from logging import WARNING
+from logging import WARNING, INFO
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from flwr.common import (
@@ -171,19 +171,25 @@ class FedAvg(Strategy):
         self, server_round: int, parameters: Parameters, client_manager: ClientManager
     ) -> List[Tuple[ClientProxy, FitIns]]:
         """Configure the next round of training."""
+        log(INFO, "FedAvg.configure_fit()")
+
         config = {}
         if self.on_fit_config_fn is not None:
             # Custom fit config function provided
             config = self.on_fit_config_fn(server_round)
         fit_ins = FitIns(parameters, config)
 
+        log(INFO, "fit_ins: %s", fit_ins)
+
         # Sample clients
         sample_size, min_num_clients = self.num_fit_clients(
             client_manager.num_available()
         )
+        log(INFO, "sample_size: %s, min_num_clients: %s", sample_size, min_num_clients)
         clients = client_manager.sample(
             num_clients=sample_size, min_num_clients=min_num_clients
         )
+        log(INFO, "clients: %s", clients)
 
         # Return client/config pairs
         return [(client, fit_ins) for client in clients]

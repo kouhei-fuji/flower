@@ -102,6 +102,8 @@ class Server:
         start_time = timeit.default_timer()
 
         for current_round in range(1, num_rounds + 1):
+            log(INFO, "Current round: %d", current_round)
+
             # Train model and replace previous global model
             res_fit = self.fit_round(server_round=current_round, timeout=timeout)
             if res_fit:
@@ -201,6 +203,7 @@ class Server:
         Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
     ]:
         """Perform a single round of federated averaging."""
+        log(INFO, "fit_round()")
 
         # Get clients and their respective instructions from strategy
         client_instructions = self.strategy.configure_fit(
@@ -208,6 +211,7 @@ class Server:
             parameters=self.parameters,
             client_manager=self._client_manager,
         )
+        log(INFO, "client_instructions: %s", client_instructions)
 
         if not client_instructions:
             log(INFO, "fit_round %s: no clients selected, cancel", server_round)

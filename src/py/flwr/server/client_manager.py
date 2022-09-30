@@ -96,7 +96,11 @@ class SimpleClientManager(ClientManager):
             bool: Indicating if registration was successful. False if ClientProxy is
                 already registered or can not be registered for any reason
         """
+        log(INFO, "SimpleClientManager.register()")
+        log(INFO, "client.cid: %s", client.cid)
+        log(INFO, "self.clients: %s", self.clients)
         if client.cid in self.clients:
+            log(INFO, "resister: returing False")
             return False
 
         self.clients[client.cid] = client
@@ -127,6 +131,8 @@ class SimpleClientManager(ClientManager):
         criterion: Optional[Criterion] = None,
     ) -> List[ClientProxy]:
         """Sample a number of Flower ClientProxy instances."""
+        log(INFO, "SimpleClientManager.sample()")
+
         # Block until at least num_clients are connected.
         if min_num_clients is None:
             min_num_clients = num_clients

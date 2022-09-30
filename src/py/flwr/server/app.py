@@ -136,14 +136,19 @@ def start_server(  # pylint: disable=too-many-arguments
         "enabled" if certificates is not None else "disabled",
     )
 
+    log(INFO, "Start training")
     # Start training
     hist = _fl(
         server=initialized_server,
         config=initialized_config,
     )
+    log(INFO, "Finished training")
+    log(INFO, "hist: %s", hist)
 
+    log(INFO, "Stoping gRPC server")
     # Stop the gRPC server
     grpc_server.stop(grace=1)
+    log(INFO, "Stopped gRPC server")
 
     return hist
 
