@@ -179,7 +179,7 @@ class FedAvg(Strategy):
             config = self.on_fit_config_fn(server_round)
         fit_ins = FitIns(parameters, config)
 
-        log(INFO, "fit_ins: %s", fit_ins)
+        # log(INFO, "fit_ins: %s", fit_ins)
 
         # Sample clients
         sample_size, min_num_clients = self.num_fit_clients(
@@ -238,6 +238,7 @@ class FedAvg(Strategy):
             (parameters_to_ndarrays(fit_res.parameters), fit_res.num_examples)
             for _, fit_res in results
         ]
+        # log(INFO, "weights_results: %s", weights_results)
         parameters_aggregated = ndarrays_to_parameters(aggregate(weights_results))
 
         # Aggregate custom metrics if aggregation fn was provided

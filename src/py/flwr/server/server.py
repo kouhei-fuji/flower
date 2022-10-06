@@ -109,6 +109,7 @@ class Server:
             if res_fit:
                 parameters_prime, _, _ = res_fit  # fit_metrics_aggregated
                 if parameters_prime:
+                    log(INFO, "update server parameters with aggregated parameters")
                     self.parameters = parameters_prime
 
             # Evaluate model using strategy implementation
@@ -130,6 +131,7 @@ class Server:
 
             # Evaluate model on a sample of available clients
             res_fed = self.evaluate_round(server_round=current_round, timeout=timeout)
+            log(INFO, "res_fed: %s", res_fed)
             if res_fed:
                 loss_fed, evaluate_metrics_fed, _ = res_fed
                 if loss_fed:
@@ -211,7 +213,7 @@ class Server:
             parameters=self.parameters,
             client_manager=self._client_manager,
         )
-        log(INFO, "client_instructions: %s", client_instructions)
+        # log(INFO, "client_instructions: %s", client_instructions)
 
         if not client_instructions:
             log(INFO, "fit_round %s: no clients selected, cancel", server_round)
